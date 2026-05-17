@@ -217,7 +217,26 @@ SC03A & SC019::SendInput("{Text}}")  ; 物理 P (SC019)
         Run("cmd.exe")
     }
 }
+; ==================================================================
+; 【开发工具专属区】 VS Code / Windows Terminal / IDEA / Rider 等
+; ==================================================================
+; 包含常见 IDE：Code.exe (VS Code), idea64.exe (IntelliJ IDEA), clion64.exe (CLion) 等
+#HotIf WinActive("ahk_exe Code.exe") 
+    or WinActive("ahk_exe WindowsTerminal.exe") 
+    ;or WinActive("ahk_exe pycharm64.exe")
+    or WinActive("ahk_exe rider64.exe")
 
+    ; 使用 * 确保 Shift/Ctrl+CapsLock 组合也能触发，使用 ~ 允许按键事件继续向下传递，避免破坏全局的 Esc 映射
+    *~SC03A:: {
+        ; 设置按压持续时间，确保 IDE 底层能识别
+        SetKeyDelay(-1, 50) 
+        
+        ; 核心功能：单按或组合物理 CapsLock 触发后，立即强制切为英文 (EnglishID)
+        ; 使用 PostMessage 避免由于窗口权限导致的输入法切换失效
+        if WinExist("A")
+            DllCall("PostMessage", "Ptr", WinExist("A"), "UInt", 0x50, "Ptr", 0, "Ptr", EnglishID)
+    }
+#HotIf ; --- 开发工具专属区结束 ---
 
 ; ==================================================================
 ; 【辅助函数区】
