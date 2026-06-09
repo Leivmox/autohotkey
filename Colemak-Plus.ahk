@@ -232,13 +232,9 @@ SC03A & SC013::SendInput("{Text}=")  ; 物理 R(SC019)
     ;or WinActive("ahk_exe pycharm64.exe")
     or WinActive("ahk_exe rider64.exe")
 
-    ; 使用 * 确保 Shift/Ctrl+CapsLock 组合也能触发，使用 ~ 允许按键事件继续向下传递，避免破坏全局的 Esc 映射
-    *~SC03A:: {
-        ; 设置按压持续时间，确保 IDE 底层能识别
-        SetKeyDelay(-1, 50) 
-        
-        ; 核心功能：单按或组合物理 CapsLock 触发后，立即强制切为英文 (EnglishID)
-        ; 使用 PostMessage 避免由于窗口权限导致的输入法切换失效
+    ; 修复：CapsLock 触发时自动切英文，同时不影响 Esc 功能
+    *SC03A Up:: {
+        ; 松开 CapsLock 时自动切英文
         if WinExist("A")
             DllCall("PostMessage", "Ptr", WinExist("A"), "UInt", 0x50, "Ptr", 0, "Ptr", EnglishID)
     }
