@@ -186,6 +186,12 @@ SC03A & SC017::SendInput("{]}")  ; 物理 I (SC017)
 SC03A & SC018::SendInput("{Text}{")  ; 物理 O (SC018)
 SC03A & SC019::SendInput("{Text}}")  ; 物理 P (SC019)
 
+; --- Capslock + Q W E R (物理位置) 输出 _ - + = ---
+SC03A & SC010::SendInput("{Text}_")  ; 物理 Q (SC016)
+SC03A & SC011::SendInput("{Text}-")  ; 物理 W (SC017)
+SC03A & SC012::SendInput("{Text}+")  ; 物理 E(SC018)
+SC03A & SC013::SendInput("{Text}=")  ; 物理 R(SC019)
+
 
 ; ==================================================================
 ; 【全局快捷键区】 (系统级工具)
