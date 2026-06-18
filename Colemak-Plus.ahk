@@ -252,3 +252,24 @@ ShowTip(Text) {
 RemoveTooltip() {
     ToolTip()
 }
+
+; ==================================================================
+; 【临时关闭/恢复整个脚本】 (右 Alt + 右 Ctrl)
+; 方便别人用电脑时一键切换，完美兼顾 CapsLock 恢复原生
+; ==================================================================
+>!RCtrl:: {
+    Suspend(-1) ; 切换挂起状态（-1 表示 Toggle 切换）
+    
+    if A_IsSuspended {
+        ; 当脚本被挂起时（给别人用）：
+        SetCapsLockState("On")  ; 先强制开启一次，确保底层状态刷新
+        SetCapsLockState("Off") ; 再关闭，让键盘灯恢复正常
+        SetCapsLockState("Normal") ; 彻底交还控制权给系统，CapsLock 恢复原生大写锁定功能
+        
+        ; 弹窗提示（1秒后自动消失），别人看到就知道快捷键切成功了
+        ShowTip("脚本已暂停：已恢复 QWERTY 布局与原生 CapsLock")
+    } else {
+        ; 当脚本恢复时（自己用）：
+        ShowTip("脚本已恢复：Colemak-DH 布局已启用")
+    }
+}
