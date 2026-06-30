@@ -77,14 +77,17 @@ SC02B::Backspace   ; 將物理 \ (SC02B) 映射為 Backspace
 ; ==================================================================
 
 ; --- 单按 CapsLock(SC03A) 变 Esc (保留组合键穿透) ---
-*SC03A:: {
-    if GetKeyState("Shift", "P")
-        SendInput("+{Esc}")
-    else if GetKeyState("Ctrl", "P")
-        SendInput("^{Esc}")
-    else
-        SendInput("{Esc}")
-}
+;*SC03A:: {
+;    if (GetKeyState("Ctrl", "P") && GetKeyState("Shift", "P"))
+;        SendInput("^+{Esc}")  ; 【修复】Ctrl + Shift 同时按下时，发送 Ctrl + Shift + Esc (打开任务管理器)
+;    else if GetKeyState("Shift", "P")
+;        SendInput("+{Esc}")
+;    else if GetKeyState("Ctrl", "P")
+;        SendInput("^{Esc}")
+;    else
+;        SendInput("{Esc}")
+;}
+*SC03A::SendInput "{Blind}{Esc}"
 
 ; --- 强制切输入法 ---
 SC03A & SC039:: {      ; CapsLock + 物理 Space (SC039)
@@ -97,37 +100,17 @@ SC03A & SC038:: {      ; CapsLock + 物理 左Alt (SC038)
         DllCall("PostMessage", "Ptr", WinExist("A"), "UInt", 0x50, "Ptr", 0, "Ptr", ChineseID)
 }
 
+;CapsLock+物理 N :退格
+SC03A & SC032::Send "{Backspace}" 
+
+;Capslock+\ :Delete
+SC03A & SC02B::Send "{Delete}"
+
 ; --- 导航层 (物理 QWERTY 上的 H J K L 位置) ---
-SC03A & SC032::Send "{Backspace}" ;
-SC03A & SC00E::SendInput("{Delete}") ;
-
-SC03A & SC023:: {
-    if GetKeyState("Shift", "P")
-        SendInput("H")  ; 选中左侧文本
-    else
-        SendInput("{Left}")   ; 仅向左移动
-}
-
-SC03A & SC024:: {
-    if GetKeyState("Shift", "P")
-        SendInput("J")  ; 选中下方文本
-    else
-        SendInput("{Down}")   ; 仅向下移动
-}
-
-SC03A & SC025:: {
-    if GetKeyState("Shift", "P")
-        SendInput("K")    ; 选中上方文本
-    else
-        SendInput("{Up}")     ; 仅向上移动
-}
-
-SC03A & SC026:: {
-    if GetKeyState("Shift", "P")
-        SendInput("L") ; 选中右侧文本
-    else
-        SendInput("{Right}")  ; 仅向右移动
-}
+SC03A & SC023::Send "{Left}"        ; CapsLock + H -> 向左移动
+SC03A & SC024::Send "{Down}"        ; CapsLock + J -> 向下移动
+SC03A & SC025::Send "{Up}"          ; CapsLock + K -> 向上移动
+SC03A & SC026::Send "{Right}"       ; CapsLock + L -> 向右移动
 
 ; --- 快捷编辑层 (完全依赖物理 QWERTY 位置，适配 Colemak-DH 习惯) ---
 ;SC03A & SC01E::SendInput("^a")      ; 物理 A -> 全选
@@ -142,12 +125,13 @@ SC03A & SC026:: {
 ;SC03A & SC01F::SendInput("^r")      ; 物理 S -> 刷新当前页面 (Ctrl+R)
 
 ; --- 标点符号区 ---
-SC03A & SC033:: {      ; CapsLock + 物理 , (SC033)
-    SendInput("{Text}《》")
-    SendInput("{Left}")
-}
+;SC03A & SC033:: {      ; CapsLock + 物理 , (SC033)
+;    SendInput("{Text}《》")
+;    SendInput("{Left}")
+;}
+
 SC03A & SC034::SendInput("{Text}。")  ; CapsLock + 物理 . (SC034)
-SC03A & SC035::SendInput("{Text}¿")   ; CapsLock + 物理 / (SC035)
+;SC03A & SC035::SendInput("{Text}¿")   ; CapsLock + 物理 / (SC035)
 
 
 ; ==================================================================
@@ -176,7 +160,8 @@ SC03A & SC028::SendInput("{Text})")  ; CapsLock + 物理 ' (SC028)
 >!SC012::SendInput("{Text}+")  ; 物理 E
 >!SC013::SendInput("{Text}=")  ; 物理 R
 
-; --- 右 Alt + , . (物理位置) 输出 - > ---
+; --- 右 Alt + N , . (物理位置) 输出< - > ---
+>!SC032::SendInput("{Text}<")  ; 物理 N (SC032)
 >!SC033::SendInput("{Text}-")  ; 物理 , (SC033)
 >!SC034::SendInput("{Text}>")  ; 物理 . (SC034)
 
@@ -187,10 +172,10 @@ SC03A & SC018::SendInput("{Text}{")  ; 物理 O (SC018)
 SC03A & SC019::SendInput("{Text}}")  ; 物理 P (SC019)
 
 ; --- Capslock + Q W E R (物理位置) 输出 _ - + = ---
-SC03A & SC010::SendInput("{Text}_")  ; 物理 Q (SC016)
-SC03A & SC011::SendInput("{Text}-")  ; 物理 W (SC017)
-SC03A & SC012::SendInput("{Text}+")  ; 物理 E(SC018)
-SC03A & SC013::SendInput("{Text}=")  ; 物理 R(SC019)
+;SC03A & SC010::SendInput("{Text}_")  ; 物理 Q (SC016)
+;SC03A & SC011::SendInput("{Text}-")  ; 物理 W (SC017)
+;SC03A & SC012::SendInput("{Text}+")  ; 物理 E(SC018)
+;SC03A & SC013::SendInput("{Text}=")  ; 物理 R(SC019)
 
 
 ; ==================================================================
@@ -243,12 +228,11 @@ SC03A & SC013::SendInput("{Text}=")  ; 物理 R(SC019)
 ; ==================================================================
 ; 【辅助函数区】
 ; ==================================================================
-
+;显示屏幕提示函数
 ShowTip(Text) {
     ToolTip("[" Text "]")
     SetTimer(RemoveTooltip, -1000)
 }
-
 RemoveTooltip() {
     ToolTip()
 }
@@ -258,7 +242,12 @@ RemoveTooltip() {
 ; 方便别人用电脑时一键切换，完美兼顾 CapsLock 恢复原生
 ; ==================================================================
 #SuspendExempt  ; 【关键】给下面的快捷键发“免死金牌”，挂起时它依然生效！
->!RCtrl:: {
+
+
+; --- 两个快捷键谁都能起作用 ---
+>!Right::  ; 快捷键1：右 Alt + 右方向键
+>!RCtrl::  ; 快捷键2：右 Alt + 右 Ctrl
+{
     Suspend(-1) ; 切换挂起状态（-1 表示 Toggle 切换）
     
     if A_IsSuspended {
@@ -268,10 +257,17 @@ RemoveTooltip() {
         SetCapsLockState("Normal") ; 彻底交还控制权给系统，CapsLock 恢复原生大写锁定功能
         
         ; 弹窗提示
-        ShowTip("脚本已暂停：已恢复 QWERTY 布局与原生 CapsLock")
+        ShowTip("已暂停")
     } else {
         ; 当脚本恢复时（自己用）：
-        ShowTip("脚本已恢复：Colemak-DH 布局已启用")
+        ; 1. 无论当前状态如何，强制切换为小写，并同步熄灭物理指示灯
+        SetCapsLockState("Off") 
+        
+        ; 2. 重新将 CapsLock 锁死，进入你的自定义模式
+        SetCapsLockState("AlwaysOff")   
+        
+        ; 3. 弹窗提示
+        ShowTip("已开启")
     }
 }
 #SuspendExempt False ; 【关键】收回“免死金牌”，防止脚本里其他的快捷键也被意外豁免
